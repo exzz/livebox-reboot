@@ -1,0 +1,6 @@
+[Unit]
+Description=Reboot Livebox
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/livebox-reboot

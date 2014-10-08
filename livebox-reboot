@@ -1,0 +1,44 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use LWP::UserAgent;
+use HTTP::Cookies;
+use JSON;
+
+# credentials
+my $hostname = '192.168.1.1';
+my $username = 'admin';
+my $password = 'admin';
+
+# lwp handler
+my $lwp = LWP::UserAgent->new;
+
+# session cookie
+my $cookie_jar = HTTP::Cookies->new;
+$lwp->cookie_jar($cookie_jar);
+
+my ( $req, $response );
+
+# authenticate on livebox
+# sending password in plain text, well done sagem ...
+$req = HTTP::Request->new( 'POST', "http://$hostname/authenticate?username=$username&password=$password" );
+
+$response = $lwp->request($req);
+die "Cannot authenticate " . $response->status_line
+  unless $response->is_success;
+
+my $auth = decode_json( $response->decoded_content() );
+
+# send reboot command
+$req = HTTP::Request->new( 'POST', "http://$hostname/sysbus/NMC:reboot" );
+$req->header( 'Content-Type' => 'application/json' );
+$req->header( 'X-Context'    => $auth->{data}{contextID} );
+$req->content( '{"parameters":{}}' );
+
+$response = $lwp->request($req);
+die "Livebox command failed " . $response->status_line
+  unless $response->is_success;
+
+print "Rebooting livebox ...";

@@ -1,0 +1,8 @@
+[Unit]
+Description=Daily reboot Livebox
+
+[Timer]
+OnCalendar=Mon-Sun *-*-* 05:30:00
+
+[Install]
+WantedBy=network.target
